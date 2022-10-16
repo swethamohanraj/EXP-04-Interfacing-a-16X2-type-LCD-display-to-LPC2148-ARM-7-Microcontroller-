@@ -1,10 +1,10 @@
 # EXP-04-Interfacing a 16X2 type LCD display to LPC2148 ARM 7Microcontroller
 
-Name :
+Name : K.M.SWETHA
 
-Roll no :
+Roll no : 212221240055
 
-Date of experiment :
+Date of experiment : 16-10-2022
 
  
 
@@ -122,17 +122,89 @@ Step 9: Select the hex file from the Kiel program folder and import the program 
 
 
 ## Kiel - Program  
+```
+#include<lpc214x.h>
+#include<stdint.h>
+#include<stdio.h>
+#include<stdlib.h>
 
+void delay_ms(uint16_t j) // Fuction for delay in milliseconds
+{
+		uint16_t x,i;
+		for(i=0;i<j;i++)
+		{
+			for(x=0; x<6000; x++);   // loop to generate 1 millisecond delay with Clk = 60MHz
+		}
+}
+
+void LCD_CMD(char command)
+{
+		IO0PIN = ( (IO0PIN & 0xFFFF00FF) | (command<<8) );
+		IO0SET = 0x00000040; // EN = 1
+		IO0CLR = 0x00000030; // RS = 0,RW = 0
+		delay_ms(2);
+		IO0CLR = 0x00000040;
+		delay_ms(5);
+}
+
+void LCD_INIT(void)
+{
+		IO0DIR = 0x0000FFF0;  // P0.8 TO P0.15 LCD Data. P0.4,5,6 AS RS RW and EN
+		delay_ms(20);
+		LCD_CMD(0x38);   // Initialize lcd
+		LCD_CMD(0x0C);   //Display on cursor off
+		LCD_CMD(0x06);   // Auto increment cursor
+		LCD_CMD(0x01);   // Display clear
+		LCD_CMD(0x80);   // First line first position
+}
+
+void LCD_STRING (char* msg)
+{
+
+		uint8_t i=0;
+		while(msg[i]!=0)
+		{
+			IO0PIN = ( (IO0PIN & 0xFFFF00FF) | (msg[i]<<8) );
+			IO0SET = 0x00000050; // RS = 1, , EN = 1
+			IO0CLR = 0x00000020; // RW = 0
+			delay_ms(2);
+			IO0CLR = 0x00000040;  // EN =0, RS and RW unchanged (i.e. RS =1, RW =0)
+			delay_ms(5);
+			i++;
+		}
+}
+
+void LCD_CHAR (char msg)
+{
+		IO0PIN = ( (IO0PIN & 0xFFFF00FF) | (msg<<8) );
+		IO0SET = 0x00000050; // RS = 1, , EN = 1
+		IO0CLR = 0x00000020; // RW = 0
+		delay_ms(2);
+		IO0CLR = 0x00000040;  // EN =0, RS and RW unchanged (i.e. RS =1, RW =0)
+		delay_ms(5);
+}
+int main(void)
+{
+		LCD_INIT();
+		LCD_STRING("Welcome to AIML");
+		LCD_CMD(0xC0);
+		LCD_STRING("212221240002");
+		return 0;
+}
+```
 
 
 
 
 ## Proteus simulation 
+### Display on:
+<img width="586" alt="swe1" src="https://user-images.githubusercontent.com/94228215/196048330-c2d9ee7e-94f6-43fa-8459-58165f7d2f1f.png">
 
-
-
+### Display off:
+<img width="585" alt="swe2" src="https://user-images.githubusercontent.com/94228215/196048318-2997d2b7-ff65-4766-91b3-6621cab3115f.png">
 
 ##  layout Diagram 
+<img width="578" alt="swe3" src="https://user-images.githubusercontent.com/94228215/196048338-0f5a765a-30c5-488a-85ca-b9ad5ccf4eb0.png">
 
 
 
